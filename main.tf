@@ -1,7 +1,3 @@
-provider aws {
-  profile = "default"
-}
-
 variable "server_port" {
   description = "The port the server will use for HTTP requests"
   type        = number
@@ -13,7 +9,7 @@ output "public_ip" {
   description = "The public IP address of the web server"
 }
 
-resource "aws_instance" "example" {
+resource "aws_launch_configuration" "example" {
   ami           = "ami-0747bdcabd34c712a" # ubuntu 18.04
   instance_type = "t2.micro"
   vpc_security_group_ids = [aws_security_group.instance.id]
@@ -23,10 +19,11 @@ resource "aws_instance" "example" {
               echo "Hello, World" > index.html
               nohup busybox httpd -f -p ${var.server_port} &
               EOF
+  
+  # required when using a launch configuration with an auto scaling group
 
-
-  tags = {
-    Name = "terraform-example"
+  lifecycle {
+    create_before_destroy = true
   }
 
 }
@@ -44,3 +41,14 @@ resource "aws_security_group" "instance" {
   }
 }
 
+resource "aws_autoscaling_group" "example" {
+  launch_configuration = aws_launch_configuration.example.name
+  min_size = 2
+  max_size = 10
+
+  tags = {
+    key = "Name"
+    value = "terraform-asg-example"
+    propagate_at_launch = true
+  }
+}

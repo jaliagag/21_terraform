@@ -91,6 +91,26 @@ $ terraform output public_ip
 54.174.13.5
 ```
 
+**data sources** to get the list of subnets in your AWS account.
+
+A data source represents a piece of read-only information that is fetched from the provider (in this case, AWS) every time you run Terraform. Adding a data source to your Terraform configurations does not create anything new; it’s just a way to query the provider’s APIs for data and to make that data available to the rest of your Terraform code.
+
+to get data out of a data source: `data.<PROVIDER>_<TYPE>.<NAME>.<ATTRIBUTE>` - `data.aws_vpc.default.id`
+
+```tf
+data "<PROVIDER>_<TYPE>" "<NAME>" {
+  [CONFIG ...] 
+}
+################################
+data "aws_vpc" "defaul" {
+  default = true
+}
+# this will look for the  default vpc configuration
+################################
+data "aws_vpc" "defaul" {
+  vpc_id = data.aws_vpc.default.id
+}
+```
 
 
 
